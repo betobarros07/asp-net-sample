@@ -2,7 +2,9 @@ using MediatR;
 using Microsoft.Azure.KeyVault;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using TimeSheet.Domain.Handlers;
+using TimeSheet.Domain.Repositories;
 using TimeSheet.Domain.Settings;
+using TimeSheet.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,6 +36,8 @@ KeyVaultClient keyVaultClient = new(async (string authority, string resource, st
 var cacheSecret = await keyVaultClient.GetSecretAsync(keyVaultEndpoint, "timesheet-connectionstring");
 SqlConnectionStringSettings sqlConnectionStringSettings = new(cacheSecret.Value);
 builder.Services.AddSingleton<SqlConnectionStringSettings>(sqlConnectionStringSettings);
+
+builder.Services.AddScoped<IHealthCheckRepository, HealthCheckRepository>();
 
 var app = builder.Build();
 
