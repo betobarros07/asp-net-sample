@@ -1,5 +1,7 @@
+using System.Net;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+using TimeSheet.Domain.Commands.Input;
 
 namespace TimeSheet.App.Controllers;
 
@@ -7,13 +9,23 @@ namespace TimeSheet.App.Controllers;
 [ApiController]
 public class HealthCheckController : ControllerBase
 {
-    public HealthCheckController()
+    private IMediator _mediatR;
+
+    public HealthCheckController(IMediator mediatR)
     {
+        _mediatR = mediatR;
     }
 
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        return await Task.FromResult(NoContent());
+        HealthCheckGetCommand command = new();
+        var result = await _mediatR.Send(command);
+        if (result.DatabaseAccess)
+        {
+            return NoContent();
+        }
+
+        return StatusCode(((int)HttpStatusCode.ServiceUnavailable));
     }
 }
